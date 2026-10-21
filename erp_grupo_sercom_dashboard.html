@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupo Sercom - Sistema ERP & Facturación</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons & FontAwesome -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sercom: {
+                            red: '#E30613',
+                            redDark: '#B8040F',
+                            redLight: '#FFF1F2',
+                            black: '#121212',
+                            dark: '#1E1E24',
+                            grayBg: '#F3F4F6',
+                            cardBg: '#FFFFFF',
+                            textDark: '#1F2937',
+                            textMuted: '#6B7280'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        brand: ['"Orbitron"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F1F1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+
+        .pulse-subtle {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.02); }
+        }
+
+        .sidebar-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-sercom-grayBg font-sans text-sercom-textDark antialiased min-h-screen flex flex-col">
+
+    <!-- MAIN NAVBAR -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <!-- Left: Toggle & Brand Logo -->
+            <div class="flex items-center gap-3">
+                <button id="sidebar-toggle" onclick="toggleSidebar()" class="p-2 rounded-lg text-gray-600 hover:text-sercom-red hover:bg-gray-100 transition focus:outline-none">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                
+                <a href="#" class="flex items-center gap-2 group">
+                    <div class="flex flex-col justify-center leading-none">
+                        <div class="font-brand font-black text-gray-900 tracking-wider text-sm sm:text-base italic">GRUPO</div>
+                        <div class="font-brand font-black text-sercom-red tracking-tight text-xl sm:text-2xl italic">SERCOM</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Middle: Search -->
+            <div class="hidden md:flex items-center flex-1 max-w-md mx-4">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </span>
+                    <input type="text" placeholder="Buscar clientes, comprobantes o productos..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-sercom-red focus:bg-white transition">
+                </div>
+            </div>
+
+            <!-- Right: Action Icons & User Menu -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <a href="javascript:void(0)" onclick="openModal('support-modal')" class="hidden sm:flex items-center gap-2 bg-sercom-red text-white px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-sercom-redDark transition shadow-sm">
+                    <i data-lucide="headset" class="w-4 h-4"></i>
+                    <span>Soporte Técnico</span>
+                </a>
+
+                <button class="relative p-2 text-gray-600 hover:text-sercom-red hover:bg-gray-100 rounded-xl transition">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-sercom-red rounded-full"></span>
+                </button>
+
+                <!-- User Profile -->
+                <div class="relative group">
+                    <button class="flex items-center gap-3 p-1.5 rounded-xl hover:bg-gray-100 transition focus:outline-none">
+                        <div class="w-9 h-9 rounded-xl bg-sercom-dark text-white flex items-center justify-center font-bold text-sm shadow">
+                            SA
+                        </div>
+                        <div class="hidden lg:flex flex-col text-left">
+                            <span class="text-xs font-bold text-gray-800 leading-tight">tlyabib-admin</span>
+                            <span class="text-[10px] text-gray-500 font-medium">Grupo Sercom ERP</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 hidden sm:block"></i>
+                    </button>
+
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 hidden group-hover:block z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-xs text-gray-500">Conectado como</p>
+                            <p class="text-sm font-bold text-gray-800 truncate">tlyabib-admin</p>
+                        </div>
+                        <a href="javascript:void(0)" onclick="alert('Sección de Configuración')" class="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 hover:text-sercom-red">
+                            <i data-lucide="settings" class="w-4 h-4"></i> Configuración
+                        </a>
+                        <a href="javascript:void(0)" onclick="openModal('support-modal')" class="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 hover:text-sercom-red">
+                            <i data-lucide="help-circle" class="w-4 h-4"></i> Centro de Ayuda
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="javascript:void(0)" onclick="alert('Sesión cerrada correctamente')" class="flex items-center gap-2 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50">
+                            <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="w-64 bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex-shrink-0 hidden md:block sidebar-transition">
+            <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-gray-400">Menú Principal</div>
+            <nav class="space-y-1 mt-2">
+                
+                <!-- Facturación Accordion -->
+                <div class="space-y-1">
+                    <button onclick="toggleMenu('menu-facturacion')" class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-gray-700 rounded-xl hover:bg-red-50 hover:text-sercom-red transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="file-text" class="w-4 h-4 text-sercom-red"></i>
+                            <span>Facturación</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
+                    </button>
+                    <div id="menu-facturacion" class="pl-9 space-y-1">
+                        <a href="javascript:void(0)" onclick="openDocModal('Factura Electrónica')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Nueva Factura</a>
+                        <a href="javascript:void(0)" onclick="openDocModal('Boleta Electrónica')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Nueva Boleta</a>
+                        <a href="javascript:void(0)" onclick="openDocModal('Ticket de Venta')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Ticket de Venta</a>
+                        <a href="javascript:void(0)" onclick="openDocModal('Cotización')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Cotizaciones</a>
+                        <a href="javascript:void(0)" onclick="openDocModal('Guía de Remisión')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Guía de Remisión</a>
+                        <a href="javascript:void(0)" onclick="alert('Redirigiendo a Búsqueda')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Búsqueda de Comprobantes</a>
+                    </div>
+                </div>
+
+                <!-- Productos y Stock -->
+                <div class="space-y-1">
+                    <button onclick="toggleMenu('menu-productos')" class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-gray-700 rounded-xl hover:bg-red-50 hover:text-sercom-red transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="box" class="w-4 h-4 text-amber-500"></i>
+                            <span>Productos y Stock</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
+                    </button>
+                    <div id="menu-productos" class="pl-9 space-y-1 hidden">
+                        <a href="javascript:void(0)" onclick="openModal('prod-modal')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Nuevo Producto / Servicio</a>
+                        <a href="javascript:void(0)" onclick="alert('Abriendo lista de inventario')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Lista de Productos</a>
+                        <a href="javascript:void(0)" onclick="alert('Categorías')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Categorías y Marcas</a>
+                    </div>
+                </div>
+
+                <!-- Clientes y Proveedores -->
+                <div class="space-y-1">
+                    <button onclick="toggleMenu('menu-entidades')" class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-gray-700 rounded-xl hover:bg-red-50 hover:text-sercom-red transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i>
+                            <span>Clientes / Proveedores</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
+                    </button>
+                    <div id="menu-entidades" class="pl-9 space-y-1 hidden">
+                        <a href="javascript:void(0)" onclick="alert('Lista Clientes')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Directorio Clientes</a>
+                        <a href="javascript:void(0)" onclick="alert('Lista Proveedores')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Directorio Proveedores</a>
+                    </div>
+                </div>
+
+                <!-- Mi Deuda / Servicios -->
+                <a href="javascript:void(0)" onclick="openModal('upload-payment-modal')" class="flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-gray-700 rounded-xl hover:bg-red-50 hover:text-sercom-red transition">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="credit-card" class="w-4 h-4 text-emerald-500"></i>
+                        <span>Mi Deuda (Sercom)</span>
+                    </div>
+                    <span class="bg-red-100 text-sercom-red text-[10px] font-bold px-2 py-0.5 rounded-full">Pendiente</span>
+                </a>
+
+                <!-- Catalogo Virtual -->
+                <a href="https://web.mitiendalink.com/" target="_blank" class="flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-gray-700 rounded-xl hover:bg-red-50 hover:text-sercom-red transition">
+                    <i data-lucide="shopping-bag" class="w-4 h-4 text-purple-500"></i>
+                    <span>Catálogo / Tienda Virtual</span>
+                </a>
+
+                <!-- Reportes -->
+                <div class="space-y-1">
+                    <button onclick="toggleMenu('menu-reportes')" class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-gray-700 rounded-xl hover:bg-red-50 hover:text-sercom-red transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-500"></i>
+                            <span>Reportes</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
+                    </button>
+                    <div id="menu-reportes" class="pl-9 space-y-1 hidden">
+                        <a href="javascript:void(0)" onclick="alert('Reporte Contable')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Reporte Contable</a>
+                        <a href="javascript:void(0)" onclick="alert('Reporte SUNAT')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Estados SUNAT</a>
+                        <a href="javascript:void(0)" onclick="alert('Reporte Ventas')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Reporte de Ventas</a>
+                        <a href="javascript:void(0)" onclick="alert('Cierre del día')" class="block py-1.5 text-xs text-gray-600 hover:text-sercom-red font-medium">Cierre del Día (Caja)</a>
+                    </div>
+                </div>
+
+                <!-- Ayuda y Soporte -->
+                <a href="javascript:void(0)" onclick="openModal('support-modal')" class="flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-gray-700 rounded-xl hover:bg-red-50 hover:text-sercom-red transition">
+                    <i data-lucide="help-circle" class="w-4 h-4 text-teal-500"></i>
+                    <span>Tutoriales y Soporte</span>
+                </a>
+
+            </nav>
+
+            <div class="mt-8 pt-4 border-t border-gray-100 px-3">
+                <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200/60 text-center">
+                    <p class="text-[11px] font-bold text-gray-800">Servicio Activo</p>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Plan ERP Facturación Pro</p>
+                    <button onclick="openModal('upload-payment-modal')" class="mt-2 w-full bg-sercom-black text-white text-[11px] font-bold py-1.5 rounded-lg hover:bg-gray-800 transition">Pagar Cuota Mensual</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main class="flex-1 space-y-6 min-w-0">
+
+            <!-- WELCOME BANNER CARD -->
+            <div class="bg-gradient-to-br from-sercom-dark via-slate-900 to-black text-white p-6 sm:p-8 rounded-3xl shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border border-gray-800">
+                <div class="relative z-10 max-w-lg text-center md:text-left">
+                    <span class="inline-block bg-sercom-red text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full tracking-wider mb-3">Panel de Gestión ERP</span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight italic">¡Hola, Grupo Sercom!</h1>
+                    <p class="text-gray-300 text-sm mt-2 font-medium">Sistema listo para pruebas. ¿Qué deseas gestionar o emitir hoy?</p>
+                </div>
+
+                <!-- Quick Stats / Status Pill (SET TO ZERO FOR TESTING) -->
+                <div class="relative z-10 flex flex-wrap gap-3 justify-center">
+                    <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center min-w-[120px]">
+                        <p class="text-[10px] text-gray-300 font-semibold uppercase">Ventas Hoy</p>
+                        <p id="stat-sales-today" class="text-xl font-bold text-white mt-0.5">S/ 0.00</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-center min-w-[120px]">
+                        <p class="text-[10px] text-gray-300 font-semibold uppercase">Comprobantes</p>
+                        <p id="stat-count-today" class="text-xl font-bold text-emerald-400 mt-0.5">0 Emitidos</p>
+                    </div>
+                </div>
+
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-sercom-red/20 rounded-full blur-3xl pointer-events-none"></div>
+            </div>
+
+            <!-- SECTION 1: FACTURACIÓN RÁPIDA -->
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-6 bg-sercom-red rounded-full"></div>
+                        <h2 class="text-base font-bold text-gray-800">Facturación y Emisión Rápida</h2>
+                    </div>
+                    <span class="text-xs text-gray-400 font-medium">Comprobantes Electrónicos SUNAT</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                    
+                    <!-- Card: Nueva Factura -->
+                    <a href="javascript:void(0)" onclick="openDocModal('Factura Electrónica')" class="group bg-rose-50/70 hover:bg-sercom-red p-4 rounded-2xl border border-rose-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-36 shadow-sm hover:shadow-md hover:-translate-y-1">
+                        <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Nueva Factura</div>
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-sercom-red group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                            <i data-lucide="file-check-2" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold text-rose-600 group-hover:text-white/80 transition">Emitir Factura</span>
+                    </a>
+
+                    <!-- Card: Nueva Boleta -->
+                    <a href="javascript:void(0)" onclick="openDocModal('Boleta Electrónica')" class="group bg-rose-50/70 hover:bg-sercom-red p-4 rounded-2xl border border-rose-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-36 shadow-sm hover:shadow-md hover:-translate-y-1">
+                        <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Nueva Boleta</div>
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-sercom-red group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                            <i data-lucide="receipt" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold text-rose-600 group-hover:text-white/80 transition">Emitir Boleta</span>
+                    </a>
+
+                    <!-- Card: Ticket de Venta -->
+                    <a href="javascript:void(0)" onclick="openDocModal('Ticket de Venta')" class="group bg-rose-50/70 hover:bg-sercom-red p-4 rounded-2xl border border-rose-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-36 shadow-sm hover:shadow-md hover:-translate-y-1">
+                        <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Ticket de Venta</div>
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-sercom-red group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                            <i data-lucide="ticket" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold text-rose-600 group-hover:text-white/80 transition">Venta Rápida</span>
+                    </a>
+
+                    <!-- Card: Nueva Cotización -->
+                    <a href="javascript:void(0)" onclick="openDocModal('Cotización')" class="group bg-rose-50/70 hover:bg-sercom-red p-4 rounded-2xl border border-rose-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-36 shadow-sm hover:shadow-md hover:-translate-y-1">
+                        <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Nueva Cotización</div>
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-sercom-red group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                            <i data-lucide="calculator" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold text-rose-600 group-hover:text-white/80 transition">Crear Proforma</span>
+                    </a>
+
+                    <!-- Card: Búsqueda -->
+                    <a href="javascript:void(0)" onclick="alert('Abriendo Búsqueda Avanzada')" class="group bg-rose-50/70 hover:bg-sercom-red p-4 rounded-2xl border border-rose-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-36 shadow-sm hover:shadow-md hover:-translate-y-1 col-span-2 sm:col-span-1">
+                        <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Búsqueda Doc.</div>
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-sercom-red group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                            <i data-lucide="search-code" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[10px] font-semibold text-rose-600 group-hover:text-white/80 transition">Consultar Historial</span>
+                    </a>
+
+                </div>
+            </section>
+
+            <!-- SECTION 2: PRODUCTOS Y REPORTES -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Module: Productos y Servicios -->
+                <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-6 bg-amber-500 rounded-full"></div>
+                            <h2 class="text-base font-bold text-gray-800">Productos y Catálogo</h2>
+                        </div>
+                        <a href="javascript:void(0)" class="text-xs font-bold text-amber-600 hover:underline">Ver Todo</a>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                        <a href="javascript:void(0)" onclick="openModal('prod-modal')" class="group bg-amber-50/60 hover:bg-amber-500 p-4 rounded-2xl border border-amber-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-32 shadow-sm hover:shadow-md">
+                            <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Nuevo Producto</div>
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-amber-600 group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-[10px] font-semibold text-amber-700 group-hover:text-white/80 transition">Registrar Ítem</span>
+                        </a>
+
+                        <a href="javascript:void(0)" onclick="alert('Mostrando Lista de Productos')" class="group bg-amber-50/60 hover:bg-amber-500 p-4 rounded-2xl border border-amber-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-32 shadow-sm hover:shadow-md">
+                            <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Lista de Productos</div>
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-amber-600 group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                                <i data-lucide="boxes" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-[10px] font-semibold text-amber-700 group-hover:text-white/80 transition">Gestión de Stock</span>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Module: Reportes Directos -->
+                <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-6 bg-emerald-500 rounded-full"></div>
+                            <h2 class="text-base font-bold text-gray-800">Reportes Rápidos</h2>
+                        </div>
+                        <span class="text-xs text-gray-400 font-medium">Contabilidad & SUNAT</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                        <a href="javascript:void(0)" onclick="alert('Descargando Reporte de Ventas')" class="group bg-emerald-50/60 hover:bg-emerald-600 p-4 rounded-2xl border border-emerald-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-32 shadow-sm hover:shadow-md">
+                            <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Reporte Ventas</div>
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                                <i data-lucide="trending-up" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-[10px] font-semibold text-emerald-700 group-hover:text-white/80 transition">Resumen Diario</span>
+                        </a>
+
+                        <a href="javascript:void(0)" onclick="alert('Generando reporte SUNAT')" class="group bg-emerald-50/60 hover:bg-emerald-600 p-4 rounded-2xl border border-emerald-100 transition-all duration-200 text-center flex flex-col items-center justify-between h-32 shadow-sm hover:shadow-md">
+                            <div class="text-xs font-bold text-gray-800 group-hover:text-white transition">Estados SUNAT</div>
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-white/20 group-hover:text-white shadow-sm transition">
+                                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-[10px] font-semibold text-emerald-700 group-hover:text-white/80 transition">Verificar CDR</span>
+                        </a>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- RECENT TRANSACTIONS TABLE (INITIALIZED AT ZERO / EMPTY) -->
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-6 bg-slate-800 rounded-full"></div>
+                        <h2 class="text-base font-bold text-gray-800">Últimos Comprobantes Emitidos</h2>
+                    </div>
+                    <button onclick="alert('Cargando todo el registro de facturación')" class="text-xs font-bold text-sercom-red hover:underline text-left">Ver todo el historial &rarr;</button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase tracking-wider">
+                                <th class="p-3 rounded-l-xl">Comprobante</th>
+                                <th class="p-3">Cliente / RUC</th>
+                                <th class="p-3">Fecha</th>
+                                <th class="p-3">Monto Total</th>
+                                <th class="p-3">Estado SUNAT</th>
+                                <th class="p-3 text-right rounded-r-xl">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoices-table-body" class="divide-y divide-gray-100">
+                            <!-- EMPTY STATE TR -->
+                            <tr id="empty-table-row">
+                                <td colspan="6" class="p-8 text-center text-gray-400">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <i data-lucide="file-x" class="w-8 h-8 text-gray-300"></i>
+                                        <p class="font-semibold text-xs text-gray-500">No hay comprobantes creados aún.</p>
+                                        <p class="text-[11px] text-gray-400">Emite tu primer documento para comenzar las pruebas.</p>
+                                        <button onclick="openDocModal('Factura Electrónica')" class="mt-2 bg-sercom-red text-white text-xs font-bold px-4 py-1.5 rounded-xl hover:bg-sercom-redDark transition shadow-sm">
+                                            + Crear Comprobante
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- CHATBOT WIDGET: SMARTCITO -->
+    <div class="fixed bottom-6 right-6 z-50">
+        
+        <button id="chat-trigger" onclick="toggleChatWindow()" class="group relative bg-sercom-red hover:bg-sercom-redDark text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center pulse-subtle hover:scale-105">
+            <i data-lucide="bot" class="w-7 h-7"></i>
+            <span class="absolute -top-1 -right-1 bg-emerald-500 w-3.5 h-3.5 rounded-full border-2 border-white"></span>
+        </button>
+
+        <div id="chat-window" class="hidden absolute bottom-16 right-0 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 flex-col overflow-hidden transition-all duration-300 z-50">
+            <div class="bg-gradient-to-r from-sercom-red to-sercom-redDark text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center border border-white/20">
+                        <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold leading-tight">Asistente Virtual Smartcito</h3>
+                        <p class="text-[10px] text-rose-100">Soporte y Consultas Grupo Sercom</p>
+                    </div>
+                </div>
+                <button onclick="toggleChatWindow()" class="text-white/80 hover:text-white p-1 text-lg font-bold">&times;</button>
+            </div>
+
+            <div id="chat-body" class="p-4 h-72 overflow-y-auto bg-gray-50/50 space-y-3 text-xs">
+                <div class="flex items-start gap-2">
+                    <div class="w-7 h-7 bg-sercom-red text-white rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                        S
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 text-gray-800 shadow-sm max-w-[80%]">
+                        👋 ¡Hola! Soy <strong>Smartcito</strong>. El sistema de facturación está listo para tus pruebas en S/ 0.00. ¿En qué puedo orientarte?
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5 pl-9">
+                    <button onclick="sendQuickReply('¿Cómo puedo emitir una factura electrónica?')" class="text-left bg-white border border-rose-200 text-sercom-red hover:bg-rose-50 px-3 py-1.5 rounded-xl font-medium transition">
+                        📄 ¿Cómo emitir una factura?
+                    </button>
+                    <button onclick="sendQuickReply('¿Dónde pago mi cuota pendiente?')" class="text-left bg-white border border-rose-200 text-sercom-red hover:bg-rose-50 px-3 py-1.5 rounded-xl font-medium transition">
+                        💳 ¿Dónde pago mi cuota mensual?
+                    </button>
+                    <button onclick="sendQuickReply('Necesito soporte técnico de Grupo Sercom')" class="text-left bg-white border border-rose-200 text-sercom-red hover:bg-rose-50 px-3 py-1.5 rounded-xl font-medium transition">
+                        🎧 Contactar con soporte humano
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-3 bg-white border-t border-gray-100 flex items-center gap-2">
+                <input id="chat-input" type="text" placeholder="Escribe tu mensaje..." class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-sercom-red">
+                <button onclick="sendChatMessage()" class="bg-sercom-red hover:bg-sercom-redDark text-white p-2 rounded-xl transition">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Subir Voucher de Pago -->
+    <div id="upload-payment-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative">
+            <button onclick="closeModal('upload-payment-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center">
+                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-800">Subir Voucher de Pago</h3>
+                    <p class="text-xs text-gray-500">Monto pendiente: <strong>S/ 39.00</strong></p>
+                </div>
+            </div>
+
+            <form onsubmit="handleFormSubmit(event, 'upload-payment-modal', '¡Voucher recibido con éxito! Un asesor validará la información.')" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Banco o Medio de Pago</label>
+                    <select class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                        <option>BCP - Banco de Crédito del Perú</option>
+                        <option>BBVA Continental</option>
+                        <option>Interbank</option>
+                        <option>Yape / Plin</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Número de Operación</label>
+                    <input type="text" placeholder="Ej. 0048291" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Adjuntar Captura / Comprobante</label>
+                    <div class="border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center hover:bg-gray-50 cursor-pointer">
+                        <i data-lucide="file-up" class="w-6 h-6 text-gray-400 mx-auto mb-1"></i>
+                        <span class="text-gray-500 font-medium">Haz clic para subir o arrastra el archivo</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('upload-payment-modal')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-sercom-red text-white rounded-xl font-semibold hover:bg-sercom-redDark">Enviar Pago</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Emisión Rápida Documento -->
+    <div id="doc-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 relative">
+            <button onclick="closeModal('doc-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-rose-100 text-sercom-red rounded-2xl flex items-center justify-center">
+                    <i data-lucide="file-plus" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-800">Emisión de Comprobante de Prueba</h3>
+                    <p class="text-xs text-gray-500">Módulo de facturación directa SUNAT</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleCreateInvoice(event)" class="space-y-3 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Tipo Documento</label>
+                        <select id="doc-type-select" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                            <option value="Factura Electrónica">Factura Electrónica</option>
+                            <option value="Boleta Electrónica">Boleta Electrónica</option>
+                            <option value="Ticket de Venta">Ticket de Venta</option>
+                            <option value="Cotización">Cotización</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">RUC / DNI Cliente</label>
+                        <input id="doc-num-input" type="text" placeholder="Ej. 20601234567" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Razón Social / Nombre Cliente</label>
+                    <input id="doc-client-input" type="text" placeholder="Nombre completo o Empresa" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Descripción del Servicio/Producto</label>
+                    <input type="text" placeholder="Ej. Servicios de mantenimiento" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Monto Total (S/)</label>
+                        <input id="doc-amount-input" type="number" step="0.01" placeholder="0.00" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Forma de Pago</label>
+                        <select class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                            <option>Contado</option>
+                            <option>Crédito 15 días</option>
+                            <option>Crédito 30 días</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('doc-modal')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-sercom-red text-white rounded-xl font-semibold hover:bg-sercom-redDark">Generar y Emitir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Soporte Técnico -->
+    <div id="support-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative">
+            <button onclick="closeModal('support-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-rose-100 text-sercom-red rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="headset" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-base font-bold text-gray-800">Soporte Técnico Grupo Sercom</h3>
+                <p class="text-xs text-gray-500">Estamos disponibles para asistirte con tu ERP</p>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <a href="https://wa.me/" target="_blank" class="flex items-center justify-between p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-2xl hover:bg-emerald-100 transition font-semibold">
+                    <span class="flex items-center gap-2"><i class="fa-brands fa-whatsapp text-base"></i> WhatsApp Directo</span>
+                    <span>Contactar &rarr;</span>
+                </a>
+
+                <a href="https://anydesk.com/es/downloads/windows" target="_blank" class="flex items-center justify-between p-3 bg-rose-50 text-sercom-red border border-rose-200 rounded-2xl hover:bg-rose-100 transition font-semibold">
+                    <span class="flex items-center gap-2"><i data-lucide="monitor" class="w-4 h-4"></i> Descargar AnyDesk (Remoto)</span>
+                    <span>Descargar &rarr;</span>
+                </a>
+
+                <div class="border-t border-gray-100 my-2"></div>
+
+                <div class="bg-gray-50 p-3 rounded-2xl text-center">
+                    <p class="font-bold text-gray-700">Horario de Atención</p>
+                    <p class="text-gray-500 text-[11px]">Lunes a Sábado: 8:00 am - 7:00 pm</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Registro Producto -->
+    <div id="prod-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative">
+            <button onclick="closeModal('prod-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center">
+                    <i data-lucide="box" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-800">Registrar Nuevo Producto</h3>
+                    <p class="text-xs text-gray-500">Agrega un ítem al inventario</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleFormSubmit(event, 'prod-modal', '¡Producto registrado exitosamente en el catálogo!')" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Nombre del Producto / Servicio</label>
+                    <input type="text" placeholder="Ej. Impresora Térmica 80mm" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Código / SKU</label>
+                        <input type="text" placeholder="PROD-001" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Precio de Venta (S/)</label>
+                        <input type="number" step="0.01" placeholder="0.00" required class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-sercom-red">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('prod-modal')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-semibold">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>&copy; 2026 <strong>Grupo Sercom</strong>. Todos los derechos reservados.</p>
+            <p class="text-[11px]">Sistema ERP de Facturación Electrónica conectado con SUNAT</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Global state for live invoice creation test
+        let totalSalesToday = 0;
+        let totalInvoicesToday = 0;
+        let invoiceSerialCounter = 1;
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Toggle Sidebar Nav
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        // Toggle Submenus
+        function toggleMenu(menuId) {
+            const menu = document.getElementById(menuId);
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        // Modal Controls
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if(modal) modal.classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if(modal) modal.classList.add('hidden');
+        }
+
+        function openDocModal(defaultType) {
+            const docSelect = document.getElementById('doc-type-select');
+            if(docSelect && defaultType) {
+                docSelect.value = defaultType;
+            }
+            openModal('doc-modal');
+        }
+
+        function handleFormSubmit(e, modalId, message) {
+            e.preventDefault();
+            closeModal(modalId);
+            alert(message);
+        }
+
+        // Handle creation of real test invoices starting at 0
+        function handleCreateInvoice(e) {
+            e.preventDefault();
+            
+            const docType = document.getElementById('doc-type-select').value;
+            const clientName = document.getElementById('doc-client-input').value;
+            const clientNum = document.getElementById('doc-num-input').value;
+            const amountVal = parseFloat(document.getElementById('doc-amount-input').value) || 0;
+
+            // Remove empty row if present
+            const emptyRow = document.getElementById('empty-table-row');
+            if(emptyRow) {
+                emptyRow.remove();
+            }
+
+            // Generate Series
+            let prefix = 'F001';
+            let badgeBg = 'bg-red-100 text-sercom-red';
+            let iconName = 'file-text';
+            let sunatBadge = '<span class="bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full font-bold text-[10px]">Aceptado SUNAT</span>';
+
+            if(docType.includes('Boleta')) {
+                prefix = 'B001';
+                badgeBg = 'bg-amber-100 text-amber-700';
+                iconName = 'receipt';
+            } else if(docType.includes('Ticket')) {
+                prefix = 'T001';
+                badgeBg = 'bg-blue-100 text-blue-700';
+                iconName = 'ticket';
+                sunatBadge = '<span class="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full font-bold text-[10px]">Ticket Interno</span>';
+            } else if(docType.includes('Cotización')) {
+                prefix = 'COT-';
+                badgeBg = 'bg-purple-100 text-purple-700';
+                iconName = 'calculator';
+                sunatBadge = '<span class="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full font-bold text-[10px]">Pendiente</span>';
+            }
+
+            const docNumber = `${prefix}-${String(invoiceSerialCounter).padStart(7, '0')}`;
+            invoiceSerialCounter++;
+
+            // Update Global Stats
+            totalSalesToday += amountVal;
+            totalInvoicesToday += 1;
+
+            document.getElementById('stat-sales-today').innerText = `S/ ${totalSalesToday.toFixed(2)}`;
+            document.getElementById('stat-count-today').innerText = `${totalInvoicesToday} Emitidos`;
+
+            // Append Row to History Table
+            const todayDate = new Date().toLocaleDateString('es-PE');
+            const tbody = document.getElementById('invoices-table-body');
+
+            const newRowHtml = `
+                <tr class="hover:bg-gray-50/80 transition">
+                    <td class="p-3 font-bold text-gray-800 flex items-center gap-2">
+                        <span class="p-1 ${badgeBg} rounded-md"><i data-lucide="${iconName}" class="w-3.5 h-3.5"></i></span>
+                        ${docNumber}
+                    </td>
+                    <td class="p-3 text-gray-600 font-medium">${clientName.toUpperCase()}<br><span class="text-[10px] text-gray-400">DOC: ${clientNum}</span></td>
+                    <td class="p-3 text-gray-500">${todayDate}</td>
+                    <td class="p-3 font-bold text-gray-800">S/ ${amountVal.toFixed(2)}</td>
+                    <td class="p-3">${sunatBadge}</td>
+                    <td class="p-3 text-right space-x-1">
+                        <button onclick="alert('Descargando PDF ${docNumber}')" class="p-1.5 text-gray-500 hover:text-sercom-red bg-gray-100 hover:bg-rose-50 rounded-lg transition" title="Descargar PDF"><i data-lucide="download" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="alert('Enviando por email/WhatsApp')" class="p-1.5 text-gray-500 hover:text-emerald-600 bg-gray-100 hover:bg-emerald-50 rounded-lg transition" title="Enviar"><i data-lucide="send" class="w-3.5 h-3.5"></i></button>
+                    </td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML('afterbegin', newRowHtml);
+            lucide.createIcons();
+
+            // Reset Form and close modal
+            e.target.reset();
+            closeModal('doc-modal');
+            alert(`✅ ${docType} (${docNumber}) por S/ ${amountVal.toFixed(2)} emitido correctamente.`);
+        }
+
+        // Chatbot Controls
+        function toggleChatWindow() {
+            const chatWin = document.getElementById('chat-window');
+            chatWin.classList.toggle('hidden');
+            chatWin.classList.toggle('flex');
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            appendUserMessage(text);
+            input.value = '';
+
+            setTimeout(() => {
+                appendBotReply('Gracias por comunicarte con Grupo Sercom. Tu entorno está en CERO para que realices todas las emisiones de prueba que necesites.');
+            }, 800);
+        }
+
+        function sendQuickReply(replyText) {
+            appendUserMessage(replyText);
+            
+            setTimeout(() => {
+                if(replyText.includes('factura')) {
+                    appendBotReply('Para emitir tu primera factura, presiona el botón **"Nueva Factura"** e ingresa los datos de prueba.');
+                } else if(replyText.includes('pago')) {
+                    appendBotReply('Puedes registrar el voucher de cuota mensual en la opción **"Mi Deuda"** o en el banner superior.');
+                } else {
+                    appendBotReply('Haz clic en **Soporte Técnico** para ser atendido por un operador especializado.');
+                }
+            }, 600);
+        }
+
+        function appendUserMessage(text) {
+            const chatBody = document.getElementById('chat-body');
+            const msgHtml = `
+                <div class="flex items-start justify-end gap-2">
+                    <div class="bg-sercom-red text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%] font-medium">
+                        ${text}
+                    </div>
+                </div>
+            `;
+            chatBody.insertAdjacentHTML('beforeend', msgHtml);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function appendBotReply(text) {
+            const chatBody = document.getElementById('chat-body');
+            const msgHtml = `
+                <div class="flex items-start gap-2">
+                    <div class="w-7 h-7 bg-sercom-red text-white rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                        S
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 text-gray-800 shadow-sm max-w-[80%]">
+                        ${text}
+                    </div>
+                </div>
+            `;
+            chatBody.insertAdjacentHTML('beforeend', msgHtml);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+</body>
+</html>
